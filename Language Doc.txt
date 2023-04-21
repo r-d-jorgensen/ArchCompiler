@@ -2,7 +2,7 @@ Machine - Assembly - Description
 0000 - < - move pointer up
 0001 - > - move pointer down
 0010 - + - increment location by 1
-0011 - + - decrement location by 1
+0011 - - - decrement location by 1
 0100 - ( - if pointer value is 0 go to end of loop
 0101 - ) - end of loop
 0110 - % - output (print) value at pointer
@@ -11,10 +11,10 @@ Machine - Assembly - Description
 1001 - @ - load pointer value to location
 1010 - | - OR pointer value and location value store in pointer value
 1011 - & - AND pointer value and location value store in pointer value
-1100 - 
-1101 - 
-1110 - 
-1111 - 
+1100 - ? - go to end loop
+1101 - { - start repeat
+1110 - } - end repeat
+1111 -  - 
 
 Editor
 notpad++
@@ -29,3 +29,21 @@ Execution
 read machine code
 execute on registers
 display every step with all register values shown
+
+sample instruction set:
+< #( + $ < | ? { ( - $ % < })
+.move pointer up
+.store location value in pointer
+.if pointer value is 0 go to end of loop
+. increment value by 1
+.input and store value to location at pointer
+.move pointer up
+.or pointer value and location , loop
+.end loop
+.loop
+..store location value in pointer
+..if pointervalue is 0 fo to end loop
+..decrement by 1
+..input and store value to location at pointer
+..print
+..move pointer up
