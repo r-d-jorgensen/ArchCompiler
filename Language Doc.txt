@@ -31,7 +31,8 @@ execute on registers
 display every step with all register values shown
 
 sample instruction set:
-< #( + $ < | ? { ( - $ % < })
+Code: < #( + $ < | ? { ( - $ % < })
+instrunctions:
 .move pointer up
 .store location value in pointer
 .if pointer value is 0 go to end of loop
