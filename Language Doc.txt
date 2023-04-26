@@ -1,20 +1,20 @@
-Machine - Assembly - Description
-0000 - < - move pointer up
-0001 - > - move pointer down
-0010 - + - increment location by 1
-0011 - - - decrement location by 1
-0100 - ( - if pointer value is 0 go to end of loop
-0101 - ) - end of loop
-0110 - % - output (print) value at pointer
-0111 - $ - input and store value to location at pointer
-1000 - # - store location value in pointer
-1001 - @ - load pointer value to location
-1010 - | - OR pointer value and location value store in pointer value
-1011 - & - AND pointer value and location value store in pointer value
-1100 - ? - go to end loop
-1101 - { - start repeat
-1110 - } - end repeat
-1111 -  - 
+Machine - Assembly - Description 
+0000 - < - move pointer up 
+0001 - > - move pointer down 
+0010 - + - increment location by 1 
+0011 - - - decrement location by 1 
+0100 - * - add pointer value to location value 
+0101 - _ - subtract pointer value to location value 
+0110 - % - output (print) value at pointer 
+0111 - $ - input and store value to location at pointer 
+1000 - # - store location value in pointer 
+1001 - @ - load pointer value to location 
+1010 - | - OR pointer value and location value store in pointer value 
+1011 - & - AND pointer value and location value store in pointer value 
+1100 - = - check equality between pointer and location values 
+1101 - ( - if pointer value is 0 go to end of loop
+1110 - ) - end of loop 
+1111 - ? - go to end loop 
 
 Editor
 notpad++
@@ -31,7 +31,7 @@ execute on registers
 display every step with all register values shown
 
 sample instruction set:
-Code: < #( + $ < | ? { ( - $ % < })
+Code: < #( + $ < | ? ( - $ % < ))
 instrunctions:
 .move pointer up
 .store location value in pointer
