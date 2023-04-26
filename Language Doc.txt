@@ -14,23 +14,37 @@ Machine - Assembly - Description
 1100 - = - check equality between pointer and location values 
 1101 - ( - if pointer value is 0 go to end of loop
 1110 - ) - end of loop 
-1111 - ? - go to end loop 
+1111 - ? - go to end loop
 
-Editor
+Syntax
+!this is a comment!
+
+Editor - David
 notpad++
 With above language
 
-Complier
+Complier - Tao and Lu
 Read from string
 turn to machine code
-store as string
+store as string in seperate file
 
-Execution
+Execution - Adebola and Clare
 read machine code
 execute on registers
 display every step with all register values shown
 
 sample instruction set:
+Code: +++%+
+Compiler: 00100010001001100010
+Execution: assuming 3 registers
+0, 0, 0 start values
+0010 \\ 1, 0, 0
+0010 \\ 2, 0, 0
+0010 \\ 3, 0, 0
+0110 \\ 3, 0, 0
+3
+0010 \\ 4, 0, 0
+
 Code: < #( + $ < | ? ( - $ % < ))
 instrunctions:
 .move pointer up
