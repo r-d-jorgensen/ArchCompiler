@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
+#include <bitset>
 using namespace std;
 
 void compileMachineCode() {
@@ -19,40 +20,102 @@ int registers[10] = {0, 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0, 0}; //registers are assumed to b
 int instructionLength = 4; //instruction length of 4 bits will be used to decode the instructions
 int* ptr=registers; //pointer for executing instructions; initialized to memory location of registers[0]
 
-int executeInstruction(string instruction) { //the function will return any outputs rather than printing them directly. printInstruction will handle printing the output
-    if(instruction=="0000"){ //move pointer up
+// function to decode the instruction into 4 bits and pass to execution function
+int instructionDecode(string machinecode)
+{
+	string opcode ="";
+	int codelength = machinecode.length();
+	for (int i = 0; i < codelength; i += 4) {
+        opcode += machinecode.substr(i, 4) + " ";
+		std::bitset<4> binaryArray(opcode);
+		executeInstruction(opcode, codelength - 1);
+    }
+	// Print the updated array
+    for (int i = 0; i < 10; i++) {
+        std::cout << registers[i] << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+
+
+int executeInstruction(string instruction, int ilength) { //the function will return any outputs rather than printing them directly. printInstruction will handle printing the output
+    if(instruction=="0000" && (ptr != registers + (ilength))  )
+	{  // Move the pointer to the next element, if not at the end of the array
 		ptr++;
-	}else if(instruction=="0001"){ //move pointer down
-		ptr--;
-	}else if(instruction=="0010"){ //increment location by 1
+	}
+	else if(instruction=="0001" && (ptr != registers))
+	{ // Move the pointer to the previous element, if not at the beginning of the array
+		ptr--;	
+	}
+	else if(instruction=="0010")
+	{ //increment location by 1
 		(*ptr)++;
-	}else if(instruction=="0011"){ //decrement location by 1
+	}
+	else if(instruction=="0011")
+	{ //decrement location by 1
 		(*ptr)--;
-	}else if(instruction=="0100"){ //add pointer value to location value
-		cout<<"Replace me!"<<endl;
-	}else if(instruction=="0101"){ //subtract pointer value to location value
-		cout<<"Replace me!"<<endl;
-	}else if(instruction=="0110"){ //output (print) value at pointer
+	}
+	else if(instruction=="0100")
+	{ 		
+		 /** Get the value of the previous location of the pointer
+		  *  and add pointer value to previous location value
+		  **/    	
+		*ptr += *(ptr - 1);
+		//cout<<"Replace me!"<<endl;
+	}
+	else if(instruction=="0101")
+	{ 
+		 /** Get the value of the previous location of the pointer
+		  *  and add pointer value to previous location value
+		  **/    	
+		*ptr -= *(ptr - 1);
+		//cout<<"Replace me!"<<endl;
+	}
+	else if(instruction=="0110")
+	{ 
+		//output (print) value at pointer
 		return *ptr;
-	}else if(instruction=="0111"){ //input and store value to location at pointer
+	}
+	else if(instruction=="0111")
+	{ //input and store value to location at pointer
 		cout<<"Replace me!"<<endl;
-	}else if(instruction=="1000"){ //store location value in pointer
+	}
+	else if(instruction=="1000")
+	{ //store location value in pointer
 		cout<<"Replace me!"<<endl;
-	}else if(instruction=="1001"){ //load pointer value to location
+	}
+	else if(instruction=="1001")
+	{ //load pointer value to location
 		cout<<"Replace me!"<<endl;
-	}else if(instruction=="1010"){ //OR pointer value and location value store in pointer value
+	}
+	else if(instruction=="1010")
+	{ //OR pointer value and location value store in pointer value
 		cout<<"Replace me!"<<endl;
-	}else if(instruction=="1011"){ //AND pointer value and location value store in pointer value
+	}
+	else if(instruction=="1011")
+	{ //AND pointer value and location value store in pointer value
 		cout<<"Replace me!"<<endl;
-	}else if(instruction=="1100"){ //== equality check between pointer and location values
+	}
+	else if(instruction=="1100")
+	{ //== equality check between pointer and location values
 		cout<<"Replace me!"<<endl;
-	}else if(instruction=="1101"){ //if pointer value is 0 go to end of loop
+	}
+	else if(instruction=="1101")
+	{ //if pointer value is 0 go to end of loop
 		cout<<"Replace me!"<<endl;
-	}else if(instruction=="1110"){ //end of loop
+	}
+	else if(instruction=="1110")
+	{ //end of loop
 		cout<<"Replace me!"<<endl;
-	}else if(instruction=="1111"){ //go to end loop
+	}
+	else if(instruction=="1111")
+	{ //go to end loop
 		cout<<"Replace me!"<<endl;
-	}else{
+	}
+	else
+	{
 		cout<<"The instruction was not valid binary"<<endl;
 	}
 
