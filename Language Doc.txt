@@ -11,7 +11,7 @@ Machine - Assembly - Description
 1001 - @ - load pointer value to location 
 1010 - | - OR pointer value and location value store in pointer value 
 1011 - & - AND pointer value and location value store in pointer value 
-1100 - = - check equality between pointer and location values 
+1100 - = - == equality check between pointer and location values 
 1101 - ( - if pointer value is 0 go to end of loop
 1110 - ) - end of loop 
 1111 - ? - go to end loop
