@@ -17,7 +17,7 @@ Machine - Assembly - Description
 1111 - ? - go to end loop
 
 Syntax
-!this is a comment!
+! this is a comment !
 
 Editor - David
 notpad++

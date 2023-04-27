@@ -1,0 +1,15 @@
+! will print all numbers of fib to user number !
+! assumes user number is greater than 1 !
+! reg 2 will hold final result start reg will be 0 !
+
+$ ! get fib number from user and set start reg to it !
+>#=@>@%%<< ! sets reg vals 2 and 3 to 1 and prints first 2 numbers !
+
+! loops over till start reg is 0 !
+( 
+    >#>>@ ! a = c !
+    <#<* ! a += b !
+    % ! print fib number !
+    >>#<@ ! b = c !
+    <<-@
+)
