@@ -24,34 +24,28 @@ int executeInstruction(string instruction, int &programCounter, bool &skipToLoop
 	if(instruction == "0000" && (ptr != &registers[1]) )
 	{  // Move the pointer to the next element, if not at the end of the array
 		ptr--;
-		//return *ptr;
 	}
 	else if(instruction == "0001" && (ptr != &registers[9]))
 	{ // Move the pointer to the previous element, if not at the beginning of the non pointer register
 		ptr++;
-		//return *ptr;
 	}
 	else if(instruction == "0010")
 	{ //increment location by 1
 		(*ptr)++;
-		//return *ptr;
 	}
 	else if(instruction =="0011")
 	{ //decrement location by 1
 		(*ptr)--;
-		//return *ptr;
 	}
 	else if(instruction =="0100")
 	{
 		//add pointer value to location value
 		*ptr += *pReg;
-		//return *ptr;
 	}
 	else if(instruction=="0101")
 	{
 		//subtract pointer value to location value
 		*ptr -= *pReg;
-		//return *ptr;
 	}
 	else if(instruction=="0110")
 	{
@@ -97,7 +91,6 @@ int executeInstruction(string instruction, int &programCounter, bool &skipToLoop
 	else if(instruction=="1100")
 	{
 		 //== equality check between pointer and location values
-		//return (*pReg == *ptr) ? 1 : 0;
 		if(*pReg==*ptr){
 			*pReg = 1;
 		}else{
@@ -127,11 +120,12 @@ int executeInstruction(string instruction, int &programCounter, bool &skipToLoop
 	else if(instruction=="1111")
 	{
 		//go to end loop (ckossler: is this like a "continue"? does this really mean restart loop? that's how I implementeed it)
+		instCnt+=((programCounter-loopStart)/4)+1; //loop end - loop start + 1 (+1 is so we add instructions for loop start AND end)
 		programCounter = loopStart-4;
 	}
 	else
 	{
-		cout<<"The instruction was not valid binary"<<endl;
+		cout<<"The instruction was not valid"<<endl;
 	}
 
     return -9999; //this means there is no output
@@ -283,11 +277,11 @@ void runMachineCode(string fromMachine) {
 		return;
 	}
 
-    int programCounter = 0;
-	int output=-9999;
-	string loopContents = "";
-	bool skipToLoopEnd = 0;
-	int loopStart = 0;
+	//initialize variables
+    int programCounter = 0; //keeps track of current instruction to execute
+	int output=-9999; //output of -9999 means there is no output; all other values are valid outputs
+	bool skipToLoopEnd = 0; //flag indicating if an instruction should be skipped because the latest instruction was to skip to end of loop
+	int loopStart = 0; //keeps track of most recent loop start
 
     // set up output table
 	cout<<"Instruction Count	Instruction	R0(ptr)	R1	R2	R3	R4	R5	R6	R7	R8	R9	Program Output" <<endl;
