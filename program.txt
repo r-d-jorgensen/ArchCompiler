@@ -11,5 +11,5 @@ $ ! get fib number from user and set start reg to it !
     <#<* ! a += b !
     % ! print fib number !
     >>#<@ ! b = c !
-    <<- ! decrement loop val !
+    <<-# ! decrement loop val !
 )
