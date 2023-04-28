@@ -3,62 +3,54 @@
 #include <iostream>
 #include <bitset>
 #include <fstream>
+#include <vector>
+// Include necessary libraries
+
+using namespace std;
 using namespace std;
 
 int registers[10] = {0, 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0, 0}; //registers are assumed to be restricted to integer values; represented in decimal
 int instructionLength = 4; //instruction length of 4 bits will be used to decode the instructions
-int* ptr=registers; //pointer for executing instructions; initialized to memory location of registers[0]
+//get pointer register which is the first element of the array
+int* pReg = registers; //initialized to memory location of registers[0]
+int* ptr =  &registers[1] ; //pointer for executing instructions; initialized to memory location of registers[1]
 
 int executeInstruction(string instruction) { //the function will return any outputs rather than printing them directly. printInstruction will handle printing the output
-    if(instruction=="0000" && (ptr != registers + 9)  )
+    
+	//if ptr is in first location for some reason move pointer by 1
+	ptr = (ptr == pReg) ? ptr + 1 : ptr;
+
+	if(instruction == "0000" && (ptr != &registers[9]) )
 	{  // Move the pointer to the next element, if not at the end of the array
 		ptr++;
 		return *ptr;
-
 	}
-	else if(instruction=="0001" && (ptr != registers))
-	{ // Move the pointer to the previous element, if not at the beginning of the array
+	else if(instruction == "0001" && (ptr != &registers[1]))
+	{ // Move the pointer to the previous element, if not at the beginning of the non pointer register
 		ptr--;	
 		return *ptr;
 	}
-	else if(instruction=="0010")
+	else if(instruction == "0010")
 	{ //increment location by 1
 		(*ptr)++;
 		return *ptr;		 
 	}
-	else if(instruction=="0011")
+	else if(instruction =="0011")
 	{ //decrement location by 1
 		(*ptr)--;
 		return *ptr;
 	}
-	else if(instruction=="0100")
+	else if(instruction =="0100")
 	{ 		
-		 /** Get the value of the previous location of the pointer
-		  *  and add pointer value to previous location value
-		  **/   
-		 if (ptr != registers)  
-		 { 	
-			*ptr += *(ptr - 1);
-		 }
+		//add pointer value to location value 
+		*ptr += *pReg;	
 		return *ptr;
-
-		//cout<<"Replace me!"<<endl;
 	}
 	else if(instruction=="0101")
 	{ 
-		 /** Get the value of the previous location of the pointer
-		  *  and subtract pointer value to previous location value
-		  **/
-		if (ptr != registers)  
-		{ 
-			if(*ptr > *(ptr - 1)) 	
-			{
-				*ptr -= *(ptr - 1);
-			}
-		}
+		//subtract pointer value to location value 
+		*ptr -= *pReg;
 		return *ptr;
-
-		//cout<<"Replace me!"<<endl;
 	}
 	else if(instruction=="0110")
 	{ 
@@ -66,69 +58,57 @@ int executeInstruction(string instruction) { //the function will return any outp
 		return *ptr;
 	}
 	else if(instruction=="0111")
-	{ //input and store previous value to location at pointer
-		if (ptr != registers)   
-		{  	
-			*ptr = *(ptr - 1);
-		}
-		return *ptr;
-		//cout<<"Replace me!"<<endl;
+	{ 
+		//input and store value to location at pointer 
+		*ptr = *pReg;
+		return *ptr;		
 	}
 	else if(instruction=="1000")
 	{ 
 		//store location value in pointer				
-		return *ptr;
-		cout<<"This just returns the value of pointer in current location!"<<endl;
+		*pReg = *ptr;
+		return *pReg;	
 	}
 	else if(instruction=="1001")
 	{ 
 		//load pointer value to location 	
+		*ptr = *pReg;
 		return *ptr;
 		cout<<"This is same as 0111!"<<endl;
 	}
 	else if(instruction=="1010")
-	{ //OR pointer value and location value store in pointer value
-		return *ptr;
-		cout<<"this needs more clarification!"<<endl;
+	{ 
+		//OR pointer value and location value store in pointer value
+		return (*pReg || *ptr) ? ((*pReg = *ptr), 1) : 0;
+		
 	}
 	else if(instruction=="1011")
-	{ //AND pointer value and location value store in pointer value
-
-		return *ptr;
-		cout<<"this needs more clarification! Can do the comparew with previous if we must"<<endl;
+	{ 
+		//AND pointer value and location value store in pointer value
+		return (*pReg && *ptr) ? ((*pReg = *ptr), 1) : 0;
 	}
 	else if(instruction=="1100")
-	{ //== equality check between pointer and location values
-		return *ptr;
-		cout<<"Same issue as above!"<<endl;
+	{
+		 //== equality check between pointer and location values
+		return (*pReg == *ptr) ? 1 : 0;
 	}
 	else if(instruction=="1101")
 	{ 
 		//if pointer value is 0 go to end of loop
-		if( *ptr == 0){
-			int* endPtr = registers + 10;
-			// Move the pointer to the end of the array
-    		ptr = endPtr;
-		}
-		return *ptr;
-		//cout<<"Replace me!"<<endl;
+		return (*ptr == 0) ? (ptr = registers + 10, *ptr) : *ptr;
 	}
 	else if(instruction=="1110")
-	{ //end of loop
-		int* endPtr = registers + 10;
-		// Move the pointer to the end of the array
-		ptr = endPtr;		
+	{ 
+		// end of loop 
+		ptr = registers + 10;
 		return *ptr;
 		//cout<<"Replace me!"<<endl;
 	}
 	else if(instruction=="1111")
-	{ //go to end loop
-		
-		int* endPtr = registers + 10;
-		// Move the pointer to the end of the array
-		ptr = endPtr;		
-		return *ptr;
-		//cout<<"Replace me!"<<endl;
+	{ 
+		//go to end loop		
+		ptr = registers + 10;		
+		return *ptr;		
 	}
 	else
 	{
@@ -140,13 +120,11 @@ int executeInstruction(string instruction) { //the function will return any outp
 
 
 void compileMachineCode() {
-    // read code from program.txt
+
+	//set default code: read code from program.txt
     string programCode = "+++%+";
-
-    // traslate syntax into machine code
-    string runMachineCode = "00100010001001100010";
-	//instructionDecode(runMachineCode); //test output
-
+	string runMachineCode = "00100010001001100010";
+	
     // output machine code to machineCode.txt
     std::ofstream outFile("machineCode.txt");
     // Write the string to the file
@@ -176,10 +154,14 @@ int instructionCount(std::string machineCode,int instructionCodeLength){
 	}
 }
 
-void runMachineCode() {
+void runMachineCode(string fromMachine) {
     // read code from machineCode.txt
     string instructions = "00100010001001100010"; // or array of instructions [0000, 0000, ....]
-    
+    if (fromMachine !="")
+	{
+		instructions = fromMachine;
+	}
+	
     //get the total instruction count, for looping purposes and error checking
 	int instCnt = instructionCount(instructions,instructionLength);
 	if(instCnt==-1){
@@ -211,19 +193,6 @@ void runMachineCode() {
     return;
 }
 
-int main() {
-    compileMachineCode();
-    runMachineCode();
-    return 0;
-}
-
-#include <iostream>
-#include <vector>
-#include <string>
-
-// Include necessary libraries
-
-using namespace std;
 
 // Define the opcode values for each instruction
 
@@ -310,9 +279,9 @@ vector<Instruction> parse_program(const string& program) {
             case '?':
                 instructions.push_back(Instruction(LOOP_EXIT));
                 break;
-            case '?':
-                instructions.push_back(Instruction(LOOP_EXIT));
-                break;
+            //case '?':
+                //instructions.push_back(Instruction(LOOP_EXIT));
+                //break;
             default:
                 break; // Ignore other characters
         }
@@ -410,10 +379,43 @@ void execute_program(const vector<Instruction>& program) {
     }
 }
 
+string readInstruction(string filename) {
+    // Open the file for reading
+    std::ifstream inputFile(filename);
+
+    // Check if the file was opened successfully
+    if (!inputFile.is_open()) {
+        std::cerr << "Failed to open file" << std::endl;
+        return "";
+    }
+
+    // Read the contents of the file into a string
+    std::string contents((std::istreambuf_iterator<char>(inputFile)),
+                          (std::istreambuf_iterator<char>()));   
+
+    // Close the file
+    inputFile.close();
+    return contents;
+}
+
 int main() {
-    string program = "<+*-.$##.>>";
+	  
+	string program = readInstruction("program.txt"); //"<+*-.$##.>>";
+	if (program == ""){
+		return 1;
+	}
     vector<Instruction> parsed_program = parse_program(program); //
     execute_program(parsed_program);
 
+	//Read machine code
+	string machinecode = readInstruction("machineCode.txt"); 
+	if (machinecode == ""){
+		//use Default
+		machinecode = "00100010001001100010";
+	}
+	// Default syntax in machine code
+    compileMachineCode(); // is no longer required but need to check
+    runMachineCode(machinecode);
     return 0;
 }
+
