@@ -2,75 +2,62 @@
 #include <string>
 #include <iostream>
 #include <bitset>
+#include <fstream>
 using namespace std;
-
-void compileMachineCode() {
-    // read code from program.txt
-    string programCode = "+++%+";
-
-    // traslate syntax into machine code
-    string runMachineCode = "00100010001001100010";
-
-    // output machine code to machineCode.txt
-
-    return;
-}
 
 int registers[10] = {0, 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0, 0}; //registers are assumed to be restricted to integer values; represented in decimal
 int instructionLength = 4; //instruction length of 4 bits will be used to decode the instructions
 int* ptr=registers; //pointer for executing instructions; initialized to memory location of registers[0]
 
-// function to decode the instruction into 4 bits and pass to execution function
-int instructionDecode(string machinecode)
-{
-	string opcode ="";
-	int codelength = machinecode.length();
-	for (int i = 0; i < codelength; i += 4) {
-        opcode += machinecode.substr(i, 4) + " ";
-		std::bitset<4> binaryArray(opcode);
-		executeInstruction(opcode, codelength - 1);
-    }
-	// Print the updated array
-    for (int i = 0; i < 10; i++) {
-        std::cout << registers[i] << " ";
-    }
-    std::cout << std::endl;
-
-    return 0;
-}
-
-
-int executeInstruction(string instruction, int ilength) { //the function will return any outputs rather than printing them directly. printInstruction will handle printing the output
-    if(instruction=="0000" && (ptr != registers + (ilength))  )
+int executeInstruction(string instruction) { //the function will return any outputs rather than printing them directly. printInstruction will handle printing the output
+    if(instruction=="0000" && (ptr != registers + 9)  )
 	{  // Move the pointer to the next element, if not at the end of the array
 		ptr++;
+		return *ptr;
+
 	}
 	else if(instruction=="0001" && (ptr != registers))
 	{ // Move the pointer to the previous element, if not at the beginning of the array
 		ptr--;	
+		return *ptr;
 	}
 	else if(instruction=="0010")
 	{ //increment location by 1
 		(*ptr)++;
+		return *ptr;		 
 	}
 	else if(instruction=="0011")
 	{ //decrement location by 1
 		(*ptr)--;
+		return *ptr;
 	}
 	else if(instruction=="0100")
 	{ 		
 		 /** Get the value of the previous location of the pointer
 		  *  and add pointer value to previous location value
-		  **/    	
-		*ptr += *(ptr - 1);
+		  **/   
+		 if (ptr != registers)  
+		 { 	
+			*ptr += *(ptr - 1);
+		 }
+		return *ptr;
+
 		//cout<<"Replace me!"<<endl;
 	}
 	else if(instruction=="0101")
 	{ 
 		 /** Get the value of the previous location of the pointer
-		  *  and add pointer value to previous location value
-		  **/    	
-		*ptr -= *(ptr - 1);
+		  *  and subtract pointer value to previous location value
+		  **/
+		if (ptr != registers)  
+		{ 
+			if(*ptr > *(ptr - 1)) 	
+			{
+				*ptr -= *(ptr - 1);
+			}
+		}
+		return *ptr;
+
 		//cout<<"Replace me!"<<endl;
 	}
 	else if(instruction=="0110")
@@ -79,40 +66,69 @@ int executeInstruction(string instruction, int ilength) { //the function will re
 		return *ptr;
 	}
 	else if(instruction=="0111")
-	{ //input and store value to location at pointer
-		cout<<"Replace me!"<<endl;
+	{ //input and store previous value to location at pointer
+		if (ptr != registers)   
+		{  	
+			*ptr = *(ptr - 1);
+		}
+		return *ptr;
+		//cout<<"Replace me!"<<endl;
 	}
 	else if(instruction=="1000")
-	{ //store location value in pointer
-		cout<<"Replace me!"<<endl;
+	{ 
+		//store location value in pointer				
+		return *ptr;
+		cout<<"This just returns the value of pointer in current location!"<<endl;
 	}
 	else if(instruction=="1001")
-	{ //load pointer value to location
-		cout<<"Replace me!"<<endl;
+	{ 
+		//load pointer value to location 	
+		return *ptr;
+		cout<<"This is same as 0111!"<<endl;
 	}
 	else if(instruction=="1010")
 	{ //OR pointer value and location value store in pointer value
-		cout<<"Replace me!"<<endl;
+		return *ptr;
+		cout<<"this needs more clarification!"<<endl;
 	}
 	else if(instruction=="1011")
 	{ //AND pointer value and location value store in pointer value
-		cout<<"Replace me!"<<endl;
+
+		return *ptr;
+		cout<<"this needs more clarification! Can do the comparew with previous if we must"<<endl;
 	}
 	else if(instruction=="1100")
 	{ //== equality check between pointer and location values
-		cout<<"Replace me!"<<endl;
+		return *ptr;
+		cout<<"Same issue as above!"<<endl;
 	}
 	else if(instruction=="1101")
-	{ //if pointer value is 0 go to end of loop
-		cout<<"Replace me!"<<endl;
+	{ 
+		//if pointer value is 0 go to end of loop
+		if( *ptr == 0){
+			int* endPtr = registers + 10;
+			// Move the pointer to the end of the array
+    		ptr = endPtr;
+		}
+		return *ptr;
+		//cout<<"Replace me!"<<endl;
 	}
 	else if(instruction=="1110")
 	{ //end of loop
-		cout<<"Replace me!"<<endl;
+		int* endPtr = registers + 10;
+		// Move the pointer to the end of the array
+		ptr = endPtr;		
+		return *ptr;
+		//cout<<"Replace me!"<<endl;
 	}
 	else if(instruction=="1111")
 	{ //go to end loop
-		cout<<"Replace me!"<<endl;
+		
+		int* endPtr = registers + 10;
+		// Move the pointer to the end of the array
+		ptr = endPtr;		
+		return *ptr;
+		//cout<<"Replace me!"<<endl;
 	}
 	else
 	{
@@ -121,6 +137,25 @@ int executeInstruction(string instruction, int ilength) { //the function will re
 
     return -9999; //this means there is no output
 }
+
+
+void compileMachineCode() {
+    // read code from program.txt
+    string programCode = "+++%+";
+
+    // traslate syntax into machine code
+    string runMachineCode = "00100010001001100010";
+	//instructionDecode(runMachineCode); //test output
+
+    // output machine code to machineCode.txt
+    std::ofstream outFile("machineCode.txt");
+    // Write the string to the file
+    outFile << runMachineCode;
+    // Close the file
+    outFile.close();
+    return;
+}
+
 
 void printCurrentState(string instruction,int ct,int output) {
     // print the instruction being executed
@@ -171,7 +206,7 @@ void runMachineCode() {
 
 		//move counter up to grab next instruction
 		programCounter = programCounter + 4;
-	}
+	}		
 
     return;
 }
