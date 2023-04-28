@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
-#include <bitset>
+//#include <bitset>
 #include <fstream>
-#include <vector>
+//#include <vector>
 // Include necessary libraries
 
 using namespace std;
@@ -15,100 +15,119 @@ int instructionLength = 4; //instruction length of 4 bits will be used to decode
 int* pReg = registers; //initialized to memory location of registers[0]
 int* ptr =  &registers[1] ; //pointer for executing instructions; initialized to memory location of registers[1]
 
-int executeInstruction(string instruction) { //the function will return any outputs rather than printing them directly. printInstruction will handle printing the output
-    
-	//if ptr is in first location for some reason move pointer by 1
-	ptr = (ptr == pReg) ? ptr + 1 : ptr;
 
-	if(instruction == "0000" && (ptr != &registers[9]) )
+int executeInstruction(string instruction, int &programCounter, bool &skipToLoopEnd, int &loopStart, int &instCnt) { //the function will return any outputs rather than printing them directly. printInstruction will handle printing the output
+
+	//if ptr is in first location for some reason move pointer by 1
+	//ptr = (ptr == pReg) ? ptr + 1 : ptr;
+
+	if(instruction == "0000" && (ptr != &registers[1]) )
 	{  // Move the pointer to the next element, if not at the end of the array
-		ptr++;
-		return *ptr;
+		ptr--;
+		//return *ptr;
 	}
-	else if(instruction == "0001" && (ptr != &registers[1]))
+	else if(instruction == "0001" && (ptr != &registers[9]))
 	{ // Move the pointer to the previous element, if not at the beginning of the non pointer register
-		ptr--;	
-		return *ptr;
+		ptr++;
+		//return *ptr;
 	}
 	else if(instruction == "0010")
 	{ //increment location by 1
 		(*ptr)++;
-		return *ptr;		 
+		//return *ptr;
 	}
 	else if(instruction =="0011")
 	{ //decrement location by 1
 		(*ptr)--;
-		return *ptr;
+		//return *ptr;
 	}
 	else if(instruction =="0100")
-	{ 		
-		//add pointer value to location value 
-		*ptr += *pReg;	
-		return *ptr;
+	{
+		//add pointer value to location value
+		*ptr += *pReg;
+		//return *ptr;
 	}
 	else if(instruction=="0101")
-	{ 
-		//subtract pointer value to location value 
+	{
+		//subtract pointer value to location value
 		*ptr -= *pReg;
-		return *ptr;
+		//return *ptr;
 	}
 	else if(instruction=="0110")
-	{ 
+	{
 		//output (print) value at pointer
 		return *ptr;
 	}
 	else if(instruction=="0111")
-	{ 
-		//input and store value to location at pointer 
-		*ptr = *pReg;
-		return *ptr;		
+	{
+		//input and store value to location at pointer
+		int input;
+		cin >> input;
+		*ptr = input;
 	}
 	else if(instruction=="1000")
-	{ 
-		//store location value in pointer				
+	{
+		//store location value in pointer
 		*pReg = *ptr;
-		return *pReg;	
 	}
 	else if(instruction=="1001")
-	{ 
-		//load pointer value to location 	
+	{
+		//load pointer value to location
 		*ptr = *pReg;
-		return *ptr;
-		cout<<"This is same as 0111!"<<endl;
+
 	}
 	else if(instruction=="1010")
-	{ 
+	{
 		//OR pointer value and location value store in pointer value
-		return (*pReg || *ptr) ? ((*pReg = *ptr), 1) : 0;
-		
+		if(*pReg||*ptr){
+			*pReg = 1;
+		}else{
+			*pReg = 0;
+		}
 	}
 	else if(instruction=="1011")
-	{ 
+	{
 		//AND pointer value and location value store in pointer value
-		return (*pReg && *ptr) ? ((*pReg = *ptr), 1) : 0;
+		if(*pReg&&*ptr){
+			*pReg = 1;
+		}else{
+			*pReg = 0;
+		}
 	}
 	else if(instruction=="1100")
 	{
 		 //== equality check between pointer and location values
-		return (*pReg == *ptr) ? 1 : 0;
+		//return (*pReg == *ptr) ? 1 : 0;
+		if(*pReg==*ptr){
+			*pReg = 1;
+		}else{
+			*pReg = 0;
+		}
 	}
 	else if(instruction=="1101")
-	{ 
+	{
 		//if pointer value is 0 go to end of loop
-		return (*ptr == 0) ? (ptr = registers + 10, *ptr) : *ptr;
+		if(*pReg==0){
+			skipToLoopEnd = 1;
+		}else{
+			loopStart = programCounter; //remember the start of the loop
+		}
+
 	}
 	else if(instruction=="1110")
-	{ 
-		// end of loop 
-		ptr = registers + 10;
-		return *ptr;
-		//cout<<"Replace me!"<<endl;
+	{
+		// end of loop
+		if(skipToLoopEnd==1){//if we jumped forward to the end of loop, we don't need to repeat it
+			skipToLoopEnd=0;
+		}else{//otherwise, we need to return to the start of the loop
+			instCnt+=((programCounter-loopStart)/4)+1; //loop end - loop start + 1 (+1 is so we add instructions for loop start AND end)
+			programCounter=loopStart-4; //reset the program counter to the beginning of the loop (-4, since the for loop adds +4)
+		}
 	}
 	else if(instruction=="1111")
-	{ 
-		//go to end loop		
-		ptr = registers + 10;		
-		return *ptr;		
+	{
+		//go to end loop (ckossler: is this like a "continue"? does this really mean restart loop? that's how I implementeed it)
+		programCounter = loopStart-4;
 	}
 	else
 	{
@@ -119,16 +138,109 @@ int executeInstruction(string instruction) { //the function will return any outp
 }
 
 
-void compileMachineCode() {
+void compileMachineCode(string program) {
 
-	//set default code: read code from program.txt
-    string programCode = "+++%+";
-	string runMachineCode = "00100010001001100010";
-	
+	//create output string
+	string machineCode="";
+
+	//set flag to ignore further characters if characters are within comments, !!
+	bool ignore = 0;
+
+	//convert assembly code in program to machinecode
+	for (char c : program) {
+	        switch (c) {
+	            case '<':
+	                if(ignore!=1){
+	                	machineCode.append("0000");
+	                }
+	                break;
+	            case '>':
+	            	if(ignore!=1){
+	            		machineCode.append("0001");
+	            	}
+	                break;
+	            case '+':
+	            	if(ignore!=1){
+	            		machineCode.append("0010");
+	            	}
+	                break;
+	            case '-':
+	            	if(ignore!=1){
+	            		machineCode.append("0011");
+	            	}
+	                break;
+	            case '*':
+	            	if(ignore!=1){
+	            		machineCode.append("0100");
+	            	}
+	                break;
+	            case '_':
+	            	if(ignore!=1){
+	            		machineCode.append("0101");
+	            	}
+	                break;
+	            case '%':
+	            	if(ignore!=1){
+	            		machineCode.append("0110");
+	            	}
+	                break;
+	            case '$':
+	            	if(ignore!=1){
+	            		machineCode.append("0111");
+	            	}
+	                break;
+	            case '#':
+	            	if(ignore!=1){
+	            		machineCode.append("1000");
+	            	}
+	                break;
+	            case '@':
+	            	if(ignore!=1){
+	            		machineCode.append("1001");
+	            	}
+	                break;
+	            case '|':
+	            	if(ignore!=1){
+	            		machineCode.append("1010");
+	            	}
+	                break;
+	            case '&':
+	            	if(ignore!=1){
+	            		machineCode.append("1011");
+	            	}
+	                break;
+	            case '=':
+	            	if(ignore!=1){
+	            		machineCode.append("1100");
+	            	}
+	                break;
+	            case '(':
+	            	if(ignore!=1){
+	            		machineCode.append("1101");
+	            	}
+	                break;
+	            case ')':
+	            	if(ignore!=1){
+	            		machineCode.append("1110");
+	            	}
+	                break;
+	            case '?':
+	            	if(ignore!=1){
+	            		machineCode.append("1111");
+	            	}
+	                break;
+	            case '!':
+	                ignore=!ignore; //flip the ignore flag
+	                break;
+	            default:
+	                break; // Ignore other characters
+	        }
+	    }
+
     // output machine code to machineCode.txt
-    std::ofstream outFile("machineCode.txt");
+    ofstream outFile("machineCode.txt");
     // Write the string to the file
-    outFile << runMachineCode;
+    outFile << machineCode;
     // Close the file
     outFile.close();
     return;
@@ -141,7 +253,9 @@ void printCurrentState(string instruction,int ct,int output) {
 	cout<<ct<<"			"<<instruction<<"		"<<registers[0]<<"	"<<registers[1]<<"	"<<registers[2]<<"	"<<registers[3]<<"	"<<registers[4]<<"	"<<registers[5]<<"	"<<registers[6]<<"	"<<registers[7]<<"	"<<registers[8]<<"	"<<registers[9];
 	if(output!=-9999){
 		cout<<"	"<<output<<endl;
-	}else cout<<"	"<<endl;
+	}else{
+		cout<<"	"<<endl;
+	}
 
     return;
 }
@@ -161,41 +275,52 @@ void runMachineCode(string fromMachine) {
 	{
 		instructions = fromMachine;
 	}
-	
+
     //get the total instruction count, for looping purposes and error checking
 	int instCnt = instructionCount(instructions,instructionLength);
 	if(instCnt==-1){
 		cout << "The machine code is invalid length, silly!" << endl; //print error and return early
 		return;
 	}
-    
+
     int programCounter = 0;
 	int output=-9999;
-    
+	string loopContents = "";
+	bool skipToLoopEnd = 0;
+	int loopStart = 0;
+
     // set up output table
-	cout<<"Instruction Count	Instruction	R0	R1	R2	R3	R4	R5	R6	R7	R8	R9	Program Output" <<endl;
-	cout<<"---------------------------------------------------------------------------------------------------------------------------------------" <<endl;
+	cout<<"Instruction Count	Instruction	R0(ptr)	R1	R2	R3	R4	R5	R6	R7	R8	R9	Program Output" <<endl;
+	cout<<"--------------------------------------------------------------------------------------------------------------------------------------" <<endl;
 	cout<<"n/a			n/a		"<<registers[0]<<"	"<<registers[1]<<"	"<<registers[2]<<"	"<<registers[3]<<"	"<<registers[4]<<"	"<<registers[5]<<"	"<<registers[6]<<"	"<<registers[7]<<"	"<<registers[8]<<"	"<<registers[9]<<endl;
-    
+
 	// loop over each instruction
 	for(int i = 0; i < instCnt; i++){
+
 		//grab current instruction
 		string givenInstruction(instructions,programCounter,instructionLength);
 
+		//skip next instruction if we are jumping to loop end and the next instruction does not signify end of current loop
+		if(skipToLoopEnd==1&&givenInstruction!="1110"){
+			programCounter = programCounter + 4;
+			continue;
+		}
+
 		//take action based on instruction
-		output=executeInstruction(givenInstruction);
+		//cout<<"Instruction: "<<givenInstruction<<" Program Counter:" << programCounter << " Skip Flag:"<<skipToLoopEnd<< " Loop Start: " << loopStart << endl;
+		output=executeInstruction(givenInstruction,programCounter,skipToLoopEnd,loopStart,instCnt);
 		printCurrentState(givenInstruction,i,output);
 
 		//move counter up to grab next instruction
 		programCounter = programCounter + 4;
-	}		
+	}
 
     return;
 }
 
 
 // Define the opcode values for each instruction
-
+/*
 enum Opcode {
     MOVE_PTR_UP = 0b0000,          // < - move pointer up
     MOVE_PTR_DOWN = 0b0001,        // > - move pointer down
@@ -224,9 +349,12 @@ struct Instruction {
     Instruction(Opcode opcode, int operand = 0)
         : opcode(opcode), operand(operand) {}
 };
-
+*/
 // Function to parse the program and convert it into instructions
 
+/* ckossler: commenting this out because it does not provide output to a file. Rather than modify this directly,
+ * I instead copied this to the compileMachineCode program and instead of saving to a vector, saved to a string
+ *
 vector<Instruction> parse_program(const string& program) {
     vector<Instruction> instructions;
     for (char c : program) {
@@ -288,9 +416,11 @@ vector<Instruction> parse_program(const string& program) {
     }
     return instructions;
 }
+*/
 
-// Function to execute the program based on the instructions
+// Function to execute the program based on the instructions - Ckossler: I commented this out because there is already a function to do this which debola and I worked on
 
+/*
 void execute_program(const vector<Instruction>& program) {
     const int MEMORY_SIZE = 30000;
     vector<int> memory(MEMORY_SIZE, 0);
@@ -378,6 +508,7 @@ void execute_program(const vector<Instruction>& program) {
         }
     }
 }
+*/
 
 string readInstruction(string filename) {
     // Open the file for reading
@@ -391,7 +522,7 @@ string readInstruction(string filename) {
 
     // Read the contents of the file into a string
     std::string contents((std::istreambuf_iterator<char>(inputFile)),
-                          (std::istreambuf_iterator<char>()));   
+                          (std::istreambuf_iterator<char>()));
 
     // Close the file
     inputFile.close();
@@ -399,23 +530,26 @@ string readInstruction(string filename) {
 }
 
 int main() {
-	  
-	string program = readInstruction("program.txt"); //"<+*-.$##.>>";
+
+	string program = readInstruction("program.txt"); //assumes program.txt is in same folder as exe
 	if (program == ""){
 		return 1;
 	}
-    vector<Instruction> parsed_program = parse_program(program); //
-    execute_program(parsed_program);
+
+	//ckossler: commented the below out because execute_program was already handled in the scope of runMachineCode, and parse_program did not output to a file as expected.
+		// vector<Instruction> parsed_program = parse_program(program);
+		// execute_program(parsed_program);
+
+	// Convert assembly to machine code and output to file
+    compileMachineCode(program);
 
 	//Read machine code
-	string machinecode = readInstruction("machineCode.txt"); 
-	if (machinecode == ""){
+	string machineCode = readInstruction("machineCode.txt");
+	if (machineCode == ""){
 		//use Default
-		machinecode = "00100010001001100010";
+		machineCode = "00100010001001100010";
 	}
-	// Default syntax in machine code
-    compileMachineCode(); // is no longer required but need to check
-    runMachineCode(machinecode);
+    runMachineCode(machineCode); //machinecode
     return 0;
 }
 
