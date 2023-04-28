@@ -217,3 +217,203 @@ int main() {
     return 0;
 }
 
+#include <iostream>
+#include <vector>
+#include <string>
+
+// Include necessary libraries
+
+using namespace std;
+
+// Define the opcode values for each instruction
+
+enum Opcode {
+    MOVE_PTR_UP = 0b0000,          // < - move pointer up
+    MOVE_PTR_DOWN = 0b0001,        // > - move pointer down
+    INC_LOC = 0b0010,              // + - increment location by 1
+    DEC_LOC = 0b0011,              // - - decrement location by 1
+    ADD_PTR_TO_LOC = 0b0100,       // * - add pointer value to location value
+    SUB_PTR_FROM_LOC = 0b0101,     // _ - subtract pointer value from location value
+    PRINT_VAL = 0b0110,            // % - output (print) value at pointer
+    READ_VAL = 0b0111,             // $ - input and store value to location at pointer
+    STORE_LOC = 0b1000,            // # - store location value in pointer
+    LOAD_LOC = 0b1001,             // @ - load pointer value to location
+    OR_PTR_LOC = 0b1010,           // | - OR pointer value and location value, store in pointer value
+    AND_PTR_LOC = 0b1011,          // & - AND pointer value and location value, store in pointer value
+    CMP_PTR_LOC = 0b1100,          // = - check equality between pointer and location values
+    LOOP_START = 0b1101,           // ( - if pointer value is 0, go to end of loop
+    LOOP_END = 0b1110,             // ) - end of loop
+    LOOP_EXIT = 0b1111             // ? - go to end loop
+};
+
+// Define the structure for an instruction
+
+struct Instruction {
+    Opcode opcode;
+    int operand;
+
+    Instruction(Opcode opcode, int operand = 0)
+        : opcode(opcode), operand(operand) {}
+};
+
+// Function to parse the program and convert it into instructions
+
+vector<Instruction> parse_program(const string& program) {
+    vector<Instruction> instructions;
+    for (char c : program) {
+        switch (c) {
+            case '<':
+                instructions.push_back(Instruction(MOVE_PTR_UP));
+                break;
+            case '>':
+                instructions.push_back(Instruction(MOVE_PTR_DOWN));
+                break;
+            case '+':
+                instructions.push_back(Instruction(INC_LOC));
+                break;
+            case '-':
+                instructions.push_back(Instruction(DEC_LOC));
+                break;
+            case '*':
+                instructions.push_back(Instruction(ADD_PTR_TO_LOC));
+                break;
+            case '_':
+                instructions.push_back(Instruction(SUB_PTR_FROM_LOC));
+                break;
+            case '%':
+                instructions.push_back(Instruction(PRINT_VAL));
+                break;
+            case '$':
+                instructions.push_back(Instruction(READ_VAL));
+                break;
+            case '#':
+                instructions.push_back(Instruction(STORE_LOC));
+                break;
+            case '@':
+                instructions.push_back(Instruction(LOAD_LOC));
+                break;
+            case '|':
+                instructions.push_back(Instruction(OR_PTR_LOC));
+                break;
+            case '&':
+                instructions.push_back(Instruction(AND_PTR_LOC));
+                break;
+            case '=':
+                instructions.push_back(Instruction(CMP_PTR_LOC));
+                break;
+            case '(':
+                instructions.push_back(Instruction(LOOP_START));
+                break;
+            case ')':
+                instructions.push_back(Instruction(LOOP_END));
+                break;
+            case '?':
+                instructions.push_back(Instruction(LOOP_EXIT));
+                break;
+            case '?':
+                instructions.push_back(Instruction(LOOP_EXIT));
+                break;
+            default:
+                break; // Ignore other characters
+        }
+    }
+    return instructions;
+}
+
+// Function to execute the program based on the instructions
+
+void execute_program(const vector<Instruction>& program) {
+    const int MEMORY_SIZE = 30000;
+    vector<int> memory(MEMORY_SIZE, 0);
+    int pointer = 0;
+    vector<int> loop_stack;
+
+    for (int pc = 0; pc < program.size(); pc++) {
+        const Instruction& instruction = program[pc];
+        switch (instruction.opcode) {
+            case MOVE_PTR_UP:
+                pointer--;
+                break;
+            case MOVE_PTR_DOWN:
+                pointer++;
+                break;
+            case INC_LOC:
+                memory[pointer]++;
+                break;
+            case DEC_LOC:
+                memory[pointer]--;
+                break;
+            case ADD_PTR_TO_LOC:
+                memory[pointer] += memory[pointer];
+                break;
+            case SUB_PTR_FROM_LOC:
+                memory[pointer] -= memory[pointer];
+                break;
+            case PRINT_VAL:
+                cout << memory[pointer];
+                break;
+            case READ_VAL:
+                cin >> memory[pointer];
+                break;
+            case STORE_LOC:
+                memory[pointer] = pointer;
+                break;
+            case LOAD_LOC:
+                pointer = memory[pointer];
+                break;
+            case OR_PTR_LOC:
+                memory[pointer] |= memory[pointer];
+                break;
+            case AND_PTR_LOC:
+                memory[pointer] &= memory[pointer];
+                break;
+            case CMP_PTR_LOC:
+                if (memory[pointer] == memory[memory[pointer]]) {
+                    pc++;
+                }
+                break;
+            case LOOP_START:
+                if (memory[pointer] == 0) {
+                    int loopDepth = 1;
+                    while (loopDepth > 0) {
+                        pc++;
+                        if (pc >= program.size()) {
+                            cerr << "Error: Unmatched '(' at instruction " << pc << endl;
+                            return;
+                        }
+                        if (program[pc].opcode == LOOP_START) {
+                            loopDepth++;
+                        } else if (program[pc].opcode == LOOP_END) {
+                            loopDepth--;
+                        }
+                    }
+                } else {
+                    loop_stack.push_back(pc);
+                }
+                break;
+            case LOOP_END:
+                if (memory[pointer] != 0) {
+                    pc = loop_stack.back() - 1;
+                } else {
+                    loop_stack.pop_back();
+                }
+                break;
+            case LOOP_EXIT:
+                if (!loop_stack.empty()) {
+                    pc = loop_stack.back() - 1;
+                    loop_stack.pop_back();
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+int main() {
+    string program = "<+*-.$##.>>";
+    vector<Instruction> parsed_program = parse_program(program); //
+    execute_program(parsed_program);
+
+    return 0;
+}
