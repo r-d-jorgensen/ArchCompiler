@@ -73,29 +73,17 @@ int executeInstruction(string instruction, int &programCounter, bool &skipToLoop
 	else if(instruction=="1010")
 	{
 		//OR pointer value and location value store in pointer value
-		if(*pReg||*ptr){
-			*pReg = 1;
-		}else{
-			*pReg = 0;
-		}
+		*pReg = (*pReg || *ptr) ? 1 : 0;
 	}
 	else if(instruction=="1011")
 	{
 		//AND pointer value and location value store in pointer value
-		if(*pReg&&*ptr){
-			*pReg = 1;
-		}else{
-			*pReg = 0;
-		}
+		*pReg = (*pReg && *ptr) ? 1 : 0;
 	}
 	else if(instruction=="1100")
 	{
-		 //== equality check between pointer and location values
-		if(*pReg==*ptr){
-			*pReg = 1;
-		}else{
-			*pReg = 0;
-		}
+		 //== equality check between pointer and location values		
+		*pReg = (*pReg == *ptr) ? 1 : 0;
 	}
 	else if(instruction=="1101")
 	{
