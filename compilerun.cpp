@@ -134,97 +134,97 @@ void compileMachineCode(string program) {
     {
         switch (c) {
             case '<':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("0000");
                 }
                 break;
             case '>':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("0001");
                 }
                 break;
             case '+':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("0010");
                 }
                 break;
             case '-':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("0011");
                 }
                 break;
             case '*':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("0100");
                 }
                 break;
             case '_':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("0101");
                 }
                 break;
             case '%':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("0110");
                 }
                 break;
             case '$':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("0111");
                 }
                 break;
             case '#':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("1000");
                 }
                 break;
             case '@':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("1001");
                 }
                 break;
             case '|':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("1010");
                 }
                 break;
             case '&':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("1011");
                 }
                 break;
             case '=':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("1100");
                 }
                 break;
             case '(':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("1101");
                 }
                 break;
             case ')':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("1110");
                 }
                 break;
             case '?':
-                if (ignore)
+                if (!ignore)
                 {
                     machineCode.append("1111");
                 }
@@ -364,4 +364,3 @@ int main()
     runMachineCode(machineCode); //machinecode
     return 0;
 }
-
